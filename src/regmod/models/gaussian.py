@@ -5,11 +5,12 @@ Gaussian Model
 import numpy as np
 from scipy.stats import norm
 
+from regmod._typing import Callable, DataFrame, Matrix, NDArray
+from regmod.data import Data
 from regmod.optimizer import msca_optimize
-from regmod._typing import Callable, NDArray, DataFrame
 
 from .model import Model
-from .utils import model_post_init
+from .utils import get_params, model_post_init
 
 
 class GaussianModel(Model):
@@ -18,9 +19,18 @@ class GaussianModel(Model):
 
     def attach_df(self, df: DataFrame):
         super().attach_df(df)
-        self.mat[0], self.cmat, self.cvec = model_post_init(
-            self.mat[0], self.uvec, self.linear_umat, self.linear_uvec
+        self.mat[0], self.cmat, self.cvec, self.hmat = model_post_init(
+            self.mat[0],
+            self.uvec,
+            self.linear_umat,
+            self.linear_uvec,
+            self.gvec,
+            self.linear_gmat,
+            self.linear_gvec,
         )
+
+    def hessian_from_gprior(self) -> Matrix:
+        return self.hmat
 
     def objective(self, coefs: NDArray) -> float:
         """Objective function.
@@ -123,6 +133,12 @@ class GaussianModel(Model):
         jacobian2 = jacobian.dot(jacobian.T) + hess_mat_gprior
         return jacobian2
 
+    def get_pearson_residuals(self, coefs: NDArray) -> NDArray:
+        pred = self.params[0].get_param(coefs, self.data, mat=self.mat[0])
+        pred_sd = 1.0 / np.sqrt(self.data.weights)
+
+        return (self.data.obs - pred) / pred_sd
+
     def fit(self, optimizer: Callable = msca_optimize, **optimizer_options):
         """Fit function.
 
@@ -149,3 +165,66 @@ class GaussianModel(Model):
             norm.ppf(bounds[0], loc=mean, scale=sd),
             norm.ppf(bounds[1], loc=mean, scale=sd),
         ]
+
+
+class CanonicalGaussianModel(GaussianModel):
+    def __init__(self, data: Data, **kwargs):
+        super().__init__(data, **kwargs)
+        if self.params[0].inv_link.name != "identity":
+            raise ValueError(
+                "Canonical Gaussian model requires inverse link to be identity."
+            )
+
+    def objective(self, coefs: NDArray) -> float:
+        weights = self.data.weights * self.data.trim_weights
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+
+        prior_obj = self.objective_from_gprior(coefs)
+        likli_obj = 0.5 * weights.dot((y - self.data.obs) ** 2)
+        return prior_obj + likli_obj
+
+    def gradient(self, coefs: NDArray) -> NDArray:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+
+        prior_grad = self.gradient_from_gprior(coefs)
+        likli_grad = mat.T.dot(weights * (y - self.data.obs))
+        return prior_grad + likli_grad
+
+    def hessian(self, coefs: NDArray) -> Matrix:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        likli_hess_scale = weights
+
+        prior_hess = self.hessian_from_gprior()
+        likli_hess_right = mat.scale_rows(likli_hess_scale)
+        likli_hess = mat.T.dot(likli_hess_right)
+
+        return prior_hess + likli_hess
+
+    def jacobian2(self, coefs: NDArray) -> NDArray:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        likli_jac_scale = weights * (y - self.data.obs)
+
+        likli_jac = mat.T.scale_cols(likli_jac_scale)
+        likli_jac2 = likli_jac.dot(likli_jac.T)
+        return self.hessian_from_gprior() + likli_jac2
+
+
+def create_gaussian_model(data: Data, **kwargs) -> GaussianModel:
+    params = get_params(
+        params=kwargs.get("params"),
+        param_specs=kwargs.get("param_specs"),
+        default_param_specs=GaussianModel.default_param_specs,
+    )
+
+    if params[0].inv_link.name == "identity":
+        return CanonicalGaussianModel(data, params=params)
+    return GaussianModel(data, params=params)
+
+
+for key in ["param_names", "default_param_specs"]:
+    setattr(create_gaussian_model, key, getattr(GaussianModel, key))
