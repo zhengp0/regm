@@ -6,10 +6,11 @@ import numpy as np
 from scipy.stats import norm
 
 from regmod._typing import Callable, DataFrame, Matrix, NDArray
+from regmod.data import Data
 from regmod.optimizer import msca_optimize
 
 from .model import Model
-from .utils import model_post_init
+from .utils import get_params, model_post_init
 
 
 class GaussianModel(Model):
@@ -30,6 +31,13 @@ class GaussianModel(Model):
 
     def hessian_from_gprior(self) -> Matrix:
         return self.hmat
+
+    def get_lin_param(self, coefs: NDArray) -> NDArray:
+        mat = self.mat[0]
+        lin_param = mat.dot(coefs)
+        if self.params[0].offset is not None:
+            lin_param += self.data.get_cols(self.params[0].offset)
+        return lin_param
 
     def objective(self, coefs: NDArray) -> float:
         """Objective function.
@@ -158,3 +166,62 @@ class GaussianModel(Model):
             norm.ppf(bounds[0], loc=mean, scale=sd),
             norm.ppf(bounds[1], loc=mean, scale=sd),
         ]
+
+
+class CanonicalGaussianModel(GaussianModel):
+    def __init__(self, data: Data, **kwargs):
+        super().__init__(data, **kwargs)
+        if self.params[0].inv_link.name != "identity":
+            raise ValueError(
+                "Canonical Gaussian model requires inverse link to be identity."
+            )
+
+    def objective(self, coefs: NDArray) -> float:
+        weights = self.data.weights * self.data.trim_weights
+        y = self.get_lin_param(coefs)
+
+        prior_obj = self.objective_from_gprior(coefs)
+        likli_obj = 0.5 * weights.dot((y - self.data.obs) ** 2)
+        return prior_obj + likli_obj
+
+    def gradient(self, coefs: NDArray) -> NDArray:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        y = self.get_lin_param(coefs)
+
+        prior_grad = self.gradient_from_gprior(coefs)
+        likli_grad = mat.T.dot(weights * (y - self.data.obs))
+        return prior_grad + likli_grad
+
+    def hessian(self, coefs: NDArray) -> Matrix:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        likli_hess_scale = weights
+
+        prior_hess = self.hessian_from_gprior()
+        likli_hess_right = mat.scale_rows(likli_hess_scale)
+        likli_hess = mat.T.dot(likli_hess_right)
+
+        return prior_hess + likli_hess
+
+    def jacobian2(self, coefs: NDArray) -> NDArray:
+        mat = self.mat[0]
+        weights = self.data.weights * self.data.trim_weights
+        y = self.get_lin_param(coefs)
+        likli_jac_scale = weights * (y - self.data.obs)
+
+        likli_jac = mat.T.scale_cols(likli_jac_scale)
+        likli_jac2 = likli_jac.dot(likli_jac.T)
+        return self.hessian_from_gprior() + likli_jac2
+
+
+def create_gaussian_model(data: Data, **kwargs) -> GaussianModel:
+    params = get_params(
+        params=kwargs.get("params"),
+        param_specs=kwargs.get("param_specs"),
+        default_param_specs=GaussianModel.default_param_specs,
+    )
+
+    if params[0].inv_link.name == "identity":
+        return CanonicalGaussianModel(data, params=params)
+    return GaussianModel(data, params=params)
