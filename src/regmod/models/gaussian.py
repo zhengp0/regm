@@ -140,6 +140,12 @@ class GaussianModel(Model):
         jacobian2 = jacobian.dot(jacobian.T) + hess_mat_gprior
         return jacobian2
 
+    def get_pearson_residuals(self, coefs: NDArray) -> NDArray:
+        pred = self.params[0].get_param(coefs, self.data, mat=self.mat[0])
+        pred_sd = 1.0 / np.sqrt(self.data.weights)
+
+        return (self.data.obs - pred) / pred_sd
+
     def fit(self, optimizer: Callable = msca_optimize, **optimizer_options):
         """Fit function.
 

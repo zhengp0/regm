@@ -166,9 +166,7 @@ class BinomialModel(Model):
         return jacobian2
 
     def get_pearson_residuals(self, coefs: NDArray) -> NDArray:
-        z = np.exp(self.get_lin_param(coefs))
-
-        pred = z / (1 + z)
+        pred = self.params[0].get_param(coefs, self.data, mat=self.mat[0])
         pred_sd = np.sqrt(pred * (1 - pred) / self.data.weights)
 
         return (self.data.obs - pred) / pred_sd
