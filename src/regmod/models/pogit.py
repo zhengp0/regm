@@ -12,11 +12,16 @@ from .model import Model
 
 class PogitModel(Model):
     param_names = ("p", "lam")
-    default_param_specs = {"p": {"inv_link": "expit"}, "lam": {"inv_link": "exp"}}
+    default_param_specs = {
+        "p": {"inv_link": "expit"},
+        "lam": {"inv_link": "exp"},
+    }
 
     def __init__(self, data: Data, **kwargs):
         if not all(data.obs >= 0):
-            raise ValueError("Pogit model requires observations to be non-negagive.")
+            raise ValueError(
+                "Pogit model requires observations to be non-negagive."
+            )
         super().__init__(data, **kwargs)
 
     def nll(self, params: list[NDArray]) -> NDArray:
@@ -36,6 +41,11 @@ class PogitModel(Model):
             [ones, self.data.obs / params[1] ** 2],
         ]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         mean = params[0] * params[1]
-        return [poisson.ppf(bounds[0], mu=mean), poisson.ppf(bounds[1], mu=mean)]
+        return [
+            poisson.ppf(bounds[0], mu=mean),
+            poisson.ppf(bounds[1], mu=mean),
+        ]

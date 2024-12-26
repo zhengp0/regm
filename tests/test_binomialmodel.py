@@ -34,7 +34,10 @@ def data():
         }
     )
     return Data(
-        col_obs="obs", col_covs=["cov0", "cov1"], col_weights="sample_size", df=df
+        col_obs="obs",
+        col_covs=["cov0", "cov1"],
+        col_weights="sample_size",
+        df=df,
     )
 
 
@@ -86,7 +89,9 @@ def var_cov0(gprior, uprior):
 @pytest.fixture
 def var_cov1(spline_gprior, spline_uprior, spline_specs):
     return SplineVariable(
-        name="cov1", spline_specs=spline_specs, priors=[spline_gprior, spline_uprior]
+        name="cov1",
+        spline_specs=spline_specs,
+        priors=[spline_gprior, spline_uprior],
     )
 
 

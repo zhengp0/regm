@@ -1,6 +1,7 @@
 """
 Test Tree Node
 """
+
 import pytest
 from pandas import DataFrame
 
@@ -109,7 +110,9 @@ def test_append(simple_node):
 
 def test_extend(simple_node):
     simple_node["2"].extend(["5", "6"])
-    assert set(n.name for n in simple_node["2"].children.values()) == set(["5", "6"])
+    assert set(n.name for n in simple_node["2"].children.values()) == set(
+        ["5", "6"]
+    )
 
 
 def test_merge(simple_node):
@@ -208,8 +211,10 @@ def test_from_full_names():
 
 
 def test_get_leafs(simple_node):
-    assert (set(node.name for node in simple_node.leafs) ==
-            set(node.name for node in simple_node.get_leafs()))
+    assert set(node.name for node in simple_node.leafs) == set(
+        node.name for node in simple_node.get_leafs()
+    )
 
-    assert (set(node.name for node in simple_node.get_leafs(1)) ==
-            set(["0", "1", "2", "3", "4"]))
+    assert set(node.name for node in simple_node.get_leafs(1)) == set(
+        ["0", "1", "2", "3", "4"]
+    )

@@ -1,6 +1,7 @@
 """
 Tree Node
 """
+
 from functools import reduce
 from itertools import chain
 from operator import attrgetter, truediv
@@ -96,18 +97,16 @@ class Node:
         """The leaf nodes of current node."""
         if self.isleaf:
             return [self]
-        return list(chain.from_iterable(
-            node.leafs for node in self.children
-        ))
+        return list(chain.from_iterable(node.leafs for node in self.children))
 
     @property
     def branch(self) -> List["Node"]:
         """The branch of current node."""
         if self.isleaf:
             return [self]
-        return [self] + list(chain.from_iterable(
-            node.branch for node in self.children
-        ))
+        return [self] + list(
+            chain.from_iterable(node.branch for node in self.children)
+        )
 
     @property
     def tree(self) -> List["Node"]:
@@ -138,8 +137,9 @@ class Node:
         """
         node = self.as_node(node)
         if not node.isroot:
-            raise ValueError(f"Cannot append {node}, "
-                             f"already have parent {node.parent}.")
+            raise ValueError(
+                f"Cannot append {node}, " f"already have parent {node.parent}."
+            )
         if node.name in self.children:
             self.children[node.name].merge(node)
         else:
@@ -178,9 +178,9 @@ class Node:
             while len(children) > 0:
                 self.append(node.pop(rank=rank), rank=rank)
 
-    def pop(self,
-            name: Union[int, str] = -1,
-            rank: Optional[int] = None) -> "Node":
+    def pop(
+        self, name: Union[int, str] = -1, rank: Optional[int] = None
+    ) -> "Node":
         """Pop the children node by name of index.
 
         Parameters
@@ -206,8 +206,7 @@ class Node:
         return node
 
     def detach(self):
-        """Detach from the parent.
-        """
+        """Detach from the parent."""
         if not self.isroot:
             self.parent.pop(self.name)
 
@@ -238,9 +237,11 @@ class Node:
         """
         if len(ranks) == 0:
             ranks = range(len(self.children.named_lists))
-        leafs = list(chain.from_iterable(
-            node.get_leafs(*ranks) for node in self.children
-        ))
+        leafs = list(
+            chain.from_iterable(
+                node.get_leafs(*ranks) for node in self.children
+            )
+        )
         if all(len(self.children.named_lists[rank]) == 0 for rank in ranks):
             leafs.insert(0, self)
         return leafs
@@ -300,8 +301,10 @@ class Node:
             raise TypeError("Can only compare to Node.")
         self_names = (_node.get_name(self.level) for _node in self.branch)
         node_names = (_node.get_name(node.level) for _node in node.branch)
-        return all(any(self_name in node_name for node_name in node_names)
-                   for self_name in self_names)
+        return all(
+            any(self_name in node_name for node_name in node_names)
+            for self_name in self_names
+        )
 
     def __gt__(self, node: "Node") -> bool:
         return node < self

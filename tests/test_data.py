@@ -1,6 +1,7 @@
 """
 Test data module
 """
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,26 +12,19 @@ from regmod.data import Data
 
 
 NUM_OBS = 10
-COL_OBS = 'obs'
-COL_COVS = ['cov1', 'cov2']
-COL_WEIGHTS = 'weights'
-COL_OFFSET = 'offset'
+COL_OBS = "obs"
+COL_COVS = ["cov1", "cov2"]
+COL_WEIGHTS = "weights"
+COL_OFFSET = "offset"
 
 
 @pytest.fixture
 def df():
     obs = np.random.randn(NUM_OBS)
-    covs = {
-        cov: np.random.randn(NUM_OBS)
-        for cov in COL_COVS
-    }
+    covs = {cov: np.random.randn(NUM_OBS) for cov in COL_COVS}
     weights = np.ones(NUM_OBS)
     offset = np.zeros(NUM_OBS)
-    df = pd.DataFrame({
-        COL_OBS: obs,
-        COL_WEIGHTS: weights,
-        COL_OFFSET: offset
-    })
+    df = pd.DataFrame({COL_OBS: obs, COL_WEIGHTS: weights, COL_OFFSET: offset})
     for cov, val in covs.items():
         df[cov] = val
     return df
@@ -62,7 +56,7 @@ def test_post_init_fill_df(df_simple):
     assert data.num_obs == NUM_OBS
     assert all(data.weights == 1.0)
     assert all(data.offset == 0.0)
-    assert all(data.get_cols('intercept') == 1.0)
+    assert all(data.get_cols("intercept") == 1.0)
 
 
 def test_detach_df(data):

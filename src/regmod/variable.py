@@ -102,12 +102,16 @@ class Variable:
                 if self.gprior is not None:
                     self.priors.remove(self.gprior)
                 self.gprior = prior
-                assert self.gprior.size == self.size, "Gaussian prior size not match."
+                assert (
+                    self.gprior.size == self.size
+                ), "Gaussian prior size not match."
             elif isinstance(prior, UniformPrior):
                 if self.uprior is not None:
                     self.priors.remove(self.uprior)
                 self.uprior = prior
-                assert self.uprior.size == self.size, "Uniform prior size not match."
+                assert (
+                    self.uprior.size == self.size
+                ), "Uniform prior size not match."
             else:
                 raise ValueError("Unknown prior type.")
 
@@ -191,7 +195,9 @@ class Variable:
         assert len(indices) == len(
             self.priors
         ), "Index size not match with number of priors."
-        self.priors = [self.priors[i] for i, index in enumerate(indices) if not index]
+        self.priors = [
+            self.priors[i] for i, index in enumerate(indices) if not index
+        ]
         self.reset_priors()
         self.process_priors()
 
@@ -309,7 +315,9 @@ class SplineVariable(Variable):
 
     def __post_init__(self):
         if (self.spline is None) and (self.spline_specs is None):
-            raise ValueError("At least one of spline and spline_specs is not None.")
+            raise ValueError(
+                "At least one of spline and spline_specs is not None."
+            )
         self.process_priors()
 
     def check_data(self, data: Data):
@@ -351,12 +359,16 @@ class SplineVariable(Variable):
                 if self.gprior is not None:
                     self.priors.remove(self.gprior)
                 self.gprior = prior
-                assert self.gprior.size == self.size, "Gaussian prior size not match."
+                assert (
+                    self.gprior.size == self.size
+                ), "Gaussian prior size not match."
             elif isinstance(prior, UniformPrior):
                 if self.uprior is not None:
                     self.priors.remove(self.uprior)
                 self.uprior = prior
-                assert self.uprior.size == self.size, "Uniform prior size not match."
+                assert (
+                    self.uprior.size == self.size
+                ), "Uniform prior size not match."
             else:
                 raise ValueError("Unknown prior type.")
 
@@ -405,7 +417,10 @@ class SplineVariable(Variable):
             uvec = np.empty((2, 0))
         else:
             uvec = np.hstack(
-                [np.vstack([prior.lb, prior.ub]) for prior in self.linear_upriors]
+                [
+                    np.vstack([prior.lb, prior.ub])
+                    for prior in self.linear_upriors
+                ]
             )
         return uvec
 
@@ -421,7 +436,10 @@ class SplineVariable(Variable):
             gvec = np.empty((2, 0))
         else:
             gvec = np.hstack(
-                [np.vstack([prior.mean, prior.sd]) for prior in self.linear_gpriors]
+                [
+                    np.vstack([prior.mean, prior.sd])
+                    for prior in self.linear_gpriors
+                ]
             )
         return gvec
 
@@ -447,7 +465,9 @@ class SplineVariable(Variable):
             umat = np.empty((0, self.size))
         else:
             if self.spline is None:
-                assert data is not None, "Must check data to create spline first."
+                assert (
+                    data is not None
+                ), "Must check data to create spline first."
                 self.check_data(data)
             umat = np.vstack([prior.mat for prior in self.linear_upriors])
         return umat
@@ -474,7 +494,9 @@ class SplineVariable(Variable):
             gmat = np.empty((0, self.size))
         else:
             if self.spline is None:
-                assert data is not None, "Must check data to create spline first."
+                assert (
+                    data is not None
+                ), "Must check data to create spline first."
                 self.check_data(data)
             gmat = np.vstack([prior.mat for prior in self.linear_gpriors])
         return gmat

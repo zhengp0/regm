@@ -18,6 +18,7 @@ from pathlib import Path
 import sys
 
 import regmod
+
 base_dir = Path(regmod.__file__).parent
 
 about = {}
@@ -54,7 +55,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -67,12 +68,12 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'furo'
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 html_title = f"regmod {version}"
 html_theme_options = {
@@ -89,6 +90,6 @@ html_theme_options = {
         "color-brand-primary": "#6FD8D1",
         "color-brand-content": "#6FD8D1",
         "color-problematic": "#FA9F50",
-        "color-background-secondary": "#202020"
+        "color-background-secondary": "#202020",
     },
 }

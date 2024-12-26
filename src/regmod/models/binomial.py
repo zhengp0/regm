@@ -20,7 +20,8 @@ class BinomialModel(Model):
     def __init__(self, data: Data, **kwargs):
         if not np.all((data.obs >= 0) & (data.obs <= 1)):
             raise ValueError(
-                "Binomial model requires observations to be " "between zero and one."
+                "Binomial model requires observations to be "
+                "between zero and one."
             )
         super().__init__(data, **kwargs)
 
@@ -61,12 +62,15 @@ class BinomialModel(Model):
 
         """
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
 
         weights = self.data.weights * self.data.trim_weights
         obj_param = -weights * (
-            self.data.obs * np.log(param) + (1 - self.data.obs) * np.log(1 - param)
+            self.data.obs * np.log(param)
+            + (1 - self.data.obs) * np.log(1 - param)
         )
         return obj_param.sum() + self.objective_from_gprior(coefs)
 
@@ -86,7 +90,9 @@ class BinomialModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
 
@@ -113,7 +119,9 @@ class BinomialModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         d2param = inv_link.d2fun(lin_param)
@@ -146,7 +154,9 @@ class BinomialModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         weights = self.data.weights * self.data.trim_weights
@@ -182,7 +192,12 @@ class BinomialModel(Model):
         )
 
     def dnll(self, params: list[NDArray]) -> list[NDArray]:
-        return [-(self.data.obs / params[0] - (1 - self.data.obs) / (1.0 - params[0]))]
+        return [
+            -(
+                self.data.obs / params[0]
+                - (1 - self.data.obs) / (1.0 - params[0])
+            )
+        ]
 
     def d2nll(self, params: list[NDArray]) -> list[list[NDArray]]:
         return [
@@ -192,7 +207,9 @@ class BinomialModel(Model):
             ]
         ]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         p = params[0]
         n = self.obs_sample_sizes
         return [binom.ppf(bounds[0], n=n, p=p), binom.ppf(bounds[1], n=n, p=p)]
@@ -211,13 +228,17 @@ class CanonicalBinomialModel(BinomialModel):
         y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
 
         prior_obj = self.objective_from_gprior(coefs)
-        likli_obj = weights.dot(np.log(1 + np.exp(-y)) + (1 - self.data.obs) * y)
+        likli_obj = weights.dot(
+            np.log(1 + np.exp(-y)) + (1 - self.data.obs) * y
+        )
         return prior_obj + likli_obj
 
     def gradient(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
 
         prior_grad = self.gradient_from_gprior(coefs)
         likli_grad = mat.T.dot(weights * (z / (1 + z) - self.data.obs))
@@ -226,7 +247,9 @@ class CanonicalBinomialModel(BinomialModel):
     def hessian(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
         likli_hess_scale = weights * (z / ((1 + z) ** 2))
 
         likli_hess_right = mat.scale_rows(likli_hess_scale)
@@ -237,7 +260,9 @@ class CanonicalBinomialModel(BinomialModel):
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
         likli_jac_scale = weights * (z / (1 + z) - self.data.obs)
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)

@@ -1,6 +1,7 @@
 """
 Test Tobit Model
 """
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -50,7 +51,8 @@ def test_neg_obs(df, param_specs):
     """ValueError if data contains negative observations."""
     with pytest.raises(ValueError, match="requires non-negative observations"):
         TobitModel(
-            data=Data(col_obs="y", col_covs=["x"], df=df), param_specs=param_specs
+            data=Data(col_obs="y", col_covs=["x"], df=df),
+            param_specs=param_specs,
         )
 
 
@@ -95,7 +97,8 @@ def test_model_no_variables():
         df=df,
     )
     model = TobitModel(
-        data, param_specs={"mu": {"offset": "offset"}, "sigma": {"offset": "offset"}}
+        data,
+        param_specs={"mu": {"offset": "offset"}, "sigma": {"offset": "offset"}},
     )
     coefs = np.array([])
     grad = model.gradient(coefs)

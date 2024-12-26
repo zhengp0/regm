@@ -43,8 +43,12 @@ class Parameter:
     variables: list[Variable] = field(default_factory=list, repr=False)
     inv_link: str | SmoothFunction = field(default="identity", repr=False)
     offset: str | None = field(default=None, repr=False)
-    linear_gpriors: list[LinearGaussianPrior] = field(default_factory=list, repr=False)
-    linear_upriors: list[LinearUniformPrior] = field(default_factory=list, repr=False)
+    linear_gpriors: list[LinearGaussianPrior] = field(
+        default_factory=list, repr=False
+    )
+    linear_upriors: list[LinearUniformPrior] = field(
+        default_factory=list, repr=False
+    )
 
     def __post_init__(self):
         if isinstance(self.inv_link, str):
@@ -53,10 +57,16 @@ class Parameter:
             self.inv_link, SmoothFunction
         ), "inv_link has to be an instance of SmoothFunction."
         assert all(
-            [isinstance(prior, LinearGaussianPrior) for prior in self.linear_gpriors]
+            [
+                isinstance(prior, LinearGaussianPrior)
+                for prior in self.linear_gpriors
+            ]
         ), "linear_gpriors has to be a list of LinearGaussianPrior."
         assert all(
-            [isinstance(prior, LinearUniformPrior) for prior in self.linear_upriors]
+            [
+                isinstance(prior, LinearUniformPrior)
+                for prior in self.linear_upriors
+            ]
         ), "linear_upriors has to be a list of LinearUniformPrior."
         assert all(
             [prior.mat.shape[1] == self.size for prior in self.linear_gpriors]
@@ -157,7 +167,10 @@ class Parameter:
         if len(self.linear_upriors) > 0:
             uvec = np.hstack(
                 [uvec]
-                + [np.vstack([prior.lb, prior.ub]) for prior in self.linear_upriors]
+                + [
+                    np.vstack([prior.lb, prior.ub])
+                    for prior in self.linear_upriors
+                ]
             )
         return uvec
 
@@ -185,7 +198,10 @@ class Parameter:
         if len(self.linear_gpriors) > 0:
             gvec = np.hstack(
                 [gvec]
-                + [np.vstack([prior.mean, prior.sd]) for prior in self.linear_gpriors]
+                + [
+                    np.vstack([prior.mean, prior.sd])
+                    for prior in self.linear_gpriors
+                ]
             )
         return gvec
 
@@ -211,7 +227,9 @@ class Parameter:
             ]
         )
         if len(self.linear_upriors) > 0:
-            umat = np.vstack([umat] + [prior.mat for prior in self.linear_upriors])
+            umat = np.vstack(
+                [umat] + [prior.mat for prior in self.linear_upriors]
+            )
         return umat
 
     def get_linear_gmat(self) -> NDArray:
@@ -236,7 +254,9 @@ class Parameter:
             ]
         )
         if len(self.linear_gpriors) > 0:
-            gmat = np.vstack([gmat] + [prior.mat for prior in self.linear_gpriors])
+            gmat = np.vstack(
+                [gmat] + [prior.mat for prior in self.linear_gpriors]
+            )
         return gmat
 
     def get_lin_param(
@@ -277,7 +297,9 @@ class Parameter:
             return lin_param, mat
         return lin_param
 
-    def get_param(self, coefs: NDArray, data: Data, mat: NDArray = None) -> NDArray:
+    def get_param(
+        self, coefs: NDArray, data: Data, mat: NDArray = None
+    ) -> NDArray:
         """Get the parameter.
 
         Parameters
@@ -298,7 +320,9 @@ class Parameter:
         lin_param = self.get_lin_param(coefs, data, mat)
         return self.inv_link.fun(lin_param)
 
-    def get_dparam(self, coefs: NDArray, data: Data, mat: NDArray = None) -> NDArray:
+    def get_dparam(
+        self, coefs: NDArray, data: Data, mat: NDArray = None
+    ) -> NDArray:
         """Get the derivative of the parameter.
 
         Parameters
@@ -321,7 +345,9 @@ class Parameter:
         lin_param, mat = self.get_lin_param(coefs, data, mat, return_mat=True)
         return self.inv_link.dfun(lin_param)[:, None] * mat
 
-    def get_d2param(self, coefs: NDArray, data: Data, mat: NDArray = None) -> NDArray:
+    def get_d2param(
+        self, coefs: NDArray, data: Data, mat: NDArray = None
+    ) -> NDArray:
         """Get the second order derivative of the parameter.
 
         Parameters

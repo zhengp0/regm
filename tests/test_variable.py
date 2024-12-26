@@ -1,36 +1,35 @@
 """
 Test variable module
 """
+
 import numpy as np
 import pandas as pd
 import pytest
 from regmod.data import Data
 from regmod.variable import Variable, SplineVariable
-from regmod.prior import GaussianPrior, UniformPrior, SplineGaussianPrior, SplineUniformPrior
+from regmod.prior import (
+    GaussianPrior,
+    UniformPrior,
+    SplineGaussianPrior,
+    SplineUniformPrior,
+)
 from regmod.utils import SplineSpecs
 
 
 NUM_OBS = 10
-COL_OBS = 'obs'
-COL_COVS = ['cov1', 'cov2']
-COL_WEIGHTS = 'weights'
-COL_OFFSET = 'offset'
+COL_OBS = "obs"
+COL_COVS = ["cov1", "cov2"]
+COL_WEIGHTS = "weights"
+COL_OFFSET = "offset"
 
 
 @pytest.fixture
 def df():
     obs = np.random.randn(NUM_OBS)
-    covs = {
-        cov: np.random.randn(NUM_OBS)
-        for cov in COL_COVS
-    }
+    covs = {cov: np.random.randn(NUM_OBS) for cov in COL_COVS}
     weights = np.ones(NUM_OBS)
     offset = np.zeros(NUM_OBS)
-    df = pd.DataFrame({
-        COL_OBS: obs,
-        COL_WEIGHTS: weights,
-        COL_OFFSET: offset
-    })
+    df = pd.DataFrame({COL_OBS: obs, COL_WEIGHTS: weights, COL_OFFSET: offset})
     for cov, val in covs.items():
         df[cov] = val
     return df
@@ -50,10 +49,7 @@ def variable():
 def spline_variable():
     return SplineVariable(
         name=COL_COVS[0],
-        spline_specs=SplineSpecs(
-            knots=np.linspace(0.0, 1.0, 5),
-            degree=3
-        )
+        spline_specs=SplineSpecs(knots=np.linspace(0.0, 1.0, 5), degree=3),
     )
 
 

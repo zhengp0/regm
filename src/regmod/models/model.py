@@ -134,7 +134,9 @@ class Model:
     ):
         params = get_params(params, param_specs, self.default_param_specs)
         param_dict = {param.name: param for param in params}
-        self.params = [param_dict[param_name] for param_name in self.param_names]
+        self.params = [
+            param_dict[param_name] for param_name in self.param_names
+        ]
 
         self.data = data
         if not self.data.is_empty():
@@ -399,7 +401,9 @@ class Model:
         """
         raise NotImplementedError()
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         """Get uncertainty interval, used for the trimming algorithm.
 
         Parameters
@@ -419,7 +423,9 @@ class Model:
     def get_pearson_residuals(self, coefs: NDArray) -> NDArray:
         raise NotImplementedError()
 
-    def detect_outliers(self, coefs: NDArray, bounds: tuple[float, float]) -> NDArray:
+    def detect_outliers(
+        self, coefs: NDArray, bounds: tuple[float, float]
+    ) -> NDArray:
         """Detect outliers.
 
         Parameters
@@ -514,7 +520,9 @@ class Model:
             Objective value.
         """
         nll_terms = self.get_nll_terms(coefs)
-        return self.data.trim_weights.dot(nll_terms) + self.objective_from_gprior(coefs)
+        return self.data.trim_weights.dot(
+            nll_terms
+        ) + self.objective_from_gprior(coefs)
 
     def gradient(self, coefs: NDArray) -> NDArray:
         """Gradient function.
@@ -534,7 +542,10 @@ class Model:
         grad_params = self.dnll(params)
         weights = self.data.weights * self.data.trim_weights
         return np.hstack(
-            [dparams[i].T.dot(weights * grad_params[i]) for i in range(self.num_params)]
+            [
+                dparams[i].T.dot(weights * grad_params[i])
+                for i in range(self.num_params)
+            ]
         ) + self.gradient_from_gprior(coefs)
 
     def hessian(self, coefs: NDArray) -> NDArray:
@@ -564,7 +575,9 @@ class Model:
             for i in range(self.num_params)
         ]
         for i in range(self.num_params):
-            hess[i][i] += np.tensordot(weights * grad_params[i], d2params[i], axes=1)
+            hess[i][i] += np.tensordot(
+                weights * grad_params[i], d2params[i], axes=1
+            )
         return np.block(hess) + self.hessian_from_gprior()
 
     def jacobian2(self, coefs: NDArray) -> NDArray:
@@ -585,7 +598,10 @@ class Model:
         grad_params = self.dnll(params)
         weights = self.data.weights * self.data.trim_weights
         jacobian = np.vstack(
-            [dparams[i].T * (weights * grad_params[i]) for i in range(self.num_params)]
+            [
+                dparams[i].T * (weights * grad_params[i])
+                for i in range(self.num_params)
+            ]
         )
         jacobian2 = jacobian.dot(jacobian.T) + self.hessian_from_gprior()
         return jacobian2

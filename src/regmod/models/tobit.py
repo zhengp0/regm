@@ -36,7 +36,10 @@ class TobitModel(Model):
     """
 
     param_names = ("mu", "sigma")
-    default_param_specs = {"mu": {"inv_link": "identity"}, "sigma": {"inv_link": "exp"}}
+    default_param_specs = {
+        "mu": {"inv_link": "identity"},
+        "sigma": {"inv_link": "exp"},
+    }
 
     def __init__(self, data: Data, **kwargs) -> None:
         """Initialize tobit model.
@@ -186,7 +189,11 @@ class TobitModel(Model):
             self.linear_gmat,
         )
         hess = jnp.concatenate(
-            [jnp.concatenate(temp[0], axis=1), jnp.concatenate(temp[1], axis=1)], axis=0
+            [
+                jnp.concatenate(temp[0], axis=1),
+                jnp.concatenate(temp[1], axis=1),
+            ],
+            axis=0,
         )
         return hess
 
@@ -328,7 +335,9 @@ def _objective(
         linear_gvec.size > 0,
         lambda x: x
         + 0.5
-        * jnp.sum((linear_gmat.dot(coefs) - linear_gvec[0]) ** 2 / linear_gvec[1] ** 2),
+        * jnp.sum(
+            (linear_gmat.dot(coefs) - linear_gvec[0]) ** 2 / linear_gvec[1] ** 2
+        ),
         lambda x: x,
         obj_prior,
     )

@@ -1,6 +1,7 @@
 """
 Base Model
 """
+
 import logging
 from copy import deepcopy
 from typing import Dict, List, Optional
@@ -86,17 +87,20 @@ class BaseModel(NodeModel):
         Overwrite the append function in NodeModel.
     """
 
-    def __init__(self,
-                 name: str,
-                 data: Data,
-                 variables: List[Variable],
-                 mtype: str = "gaussian",
-                 prior_mask: Optional[Dict] = None,
-                 **param_specs):
-
+    def __init__(
+        self,
+        name: str,
+        data: Data,
+        variables: List[Variable],
+        mtype: str = "gaussian",
+        prior_mask: Optional[Dict] = None,
+        **param_specs,
+    ):
         super().__init__(name)
-        if any(mtype not in model_config
-               for model_config in (link_funs, model_constructors)):
+        if any(
+            mtype not in model_config
+            for model_config in (link_funs, model_constructors)
+        ):
             raise ValueError(f"Not supported model type {mtype}")
         data = deepcopy(data)
         variables = list(deepcopy(variables))
@@ -104,9 +108,11 @@ class BaseModel(NodeModel):
         self.mtype = mtype
         self.data = data
         self.variables = {v.name: v for v in variables}
-        self.param_specs = {"variables": variables,
-                            "use_offset": True,
-                            **param_specs}
+        self.param_specs = {
+            "variables": variables,
+            "use_offset": True,
+            **param_specs,
+        }
         self.model = None
         self.prior_mask = {} if prior_mask is None else prior_mask
 
@@ -168,17 +174,19 @@ class BaseModel(NodeModel):
         pred_data = self.model.data.copy()
         pred_data.attach_df(df)
 
-        coefs_draws = np.random.multivariate_normal(self.model.opt_coefs,
-                                                    self.model.opt_vcov,
-                                                    size=size)
-        draws = np.vstack([
-            self.model.params[0].get_param(coefs_draw, pred_data)
-            for coefs_draw in coefs_draws
-        ])
+        coefs_draws = np.random.multivariate_normal(
+            self.model.opt_coefs, self.model.opt_vcov, size=size
+        )
+        draws = np.vstack(
+            [
+                self.model.params[0].get_param(coefs_draw, pred_data)
+                for coefs_draw in coefs_draws
+            ]
+        )
         df_draws = pd.DataFrame(
             draws.T,
             columns=[f"{self.col_value}_{i}" for i in range(size)],
-            index=df.index
+            index=df.index,
         )
 
         return pd.concat([df, df_draws], axis=1)
@@ -205,8 +213,7 @@ class BaseModel(NodeModel):
         # use minimum standard deviation of the posterior distribution
         sd = np.maximum(0.1, np.sqrt(np.diag(self.model.opt_vcov)))
         vnames = [v.name for v in self.param_specs["variables"]]
-        slices = sizes_to_slices([self.variables[name].size
-                                  for name in vnames])
+        slices = sizes_to_slices([self.variables[name].size for name in vnames])
         return {
             name: GaussianPrior(mean=mean[slices[i]], sd=sd[slices[i]])
             for i, name in enumerate(vnames)
@@ -229,8 +236,9 @@ class BaseModel(NodeModel):
             primary children.
         """
         if rank >= 1:
-            raise ValueError(f"{type(self).__name__} can only have primary "
-                             "link.")
+            raise ValueError(
+                f"{type(self).__name__} can only have primary " "link."
+            )
         super().append(node, rank=rank)
 
     def __repr__(self) -> str:

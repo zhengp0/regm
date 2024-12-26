@@ -46,7 +46,9 @@ class GaussianModel(Model):
 
         """
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
 
         weights = self.data.weights * self.data.trim_weights
@@ -69,7 +71,9 @@ class GaussianModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
 
@@ -94,7 +98,9 @@ class GaussianModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         d2param = inv_link.d2fun(lin_param)
@@ -123,7 +129,9 @@ class GaussianModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         weights = self.data.weights * self.data.trim_weights
@@ -158,7 +166,9 @@ class GaussianModel(Model):
     def d2nll(self, params: list[NDArray]) -> list[NDArray]:
         return [[np.ones(self.data.num_obs)]]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         mean = params[0]
         sd = 1.0 / np.sqrt(self.data.weights)
         return [

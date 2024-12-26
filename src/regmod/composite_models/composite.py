@@ -1,6 +1,7 @@
 """
 Composite Model
 """
+
 from typing import Dict, Iterable, List, Optional
 from itertools import chain
 
@@ -30,10 +31,12 @@ class CompositeModel(NodeModel):
         Get the computational nodes.
     """
 
-    def __init__(self,
-                 name: str,
-                 models: Optional[List[NodeModel]] = None,
-                 masks: Optional[Dict] = None):
+    def __init__(
+        self,
+        name: str,
+        models: Optional[List[NodeModel]] = None,
+        masks: Optional[Dict] = None,
+    ):
         super().__init__(name)
         models = [] if models is None else models
         if not all(isinstance(model, NodeModel) for model in models):
@@ -90,16 +93,20 @@ class CompositeModel(NodeModel):
 
     def predict(self, df: DataFrame = None) -> DataFrame:
         df = self.get_data() if df is None else df
-        return pd.concat([
-            self[name].predict(df[df[self.col_label] == name])
-            for name in df[self.col_label].unique()
-        ], ignore_index=True)
+        return pd.concat(
+            [
+                self[name].predict(df[df[self.col_label] == name])
+                for name in df[self.col_label].unique()
+            ],
+            ignore_index=True,
+        )
 
-    def get_draws(self,
-                  df: DataFrame = None,
-                  size: int = 1000) -> DataFrame:
+    def get_draws(self, df: DataFrame = None, size: int = 1000) -> DataFrame:
         df = self.get_data() if df is None else df
-        return pd.concat([
-            self[name].get_draws(df[df[self.col_label] == name], size)
-            for name in df[self.col_label].unique()
-        ], ignore_index=True)
+        return pd.concat(
+            [
+                self[name].get_draws(df[df[self.col_label] == name], size)
+                for name in df[self.col_label].unique()
+            ],
+            ignore_index=True,
+        )

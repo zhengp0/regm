@@ -1,6 +1,7 @@
 """
 Test utility module
 """
+
 import numpy as np
 import pytest
 from xspline import XSpline
@@ -31,11 +32,9 @@ def test_default_vec_factory(vec, size, default_value):
 @pytest.mark.parametrize("r_linear", [True, False])
 @pytest.mark.parametrize("knots_type", ["rel_domain", "rel_freq", "abs"])
 def test_spline_specs(knots, degree, l_linear, r_linear, knots_type):
-    spline_specs = utils.SplineSpecs(knots,
-                                     degree,
-                                     l_linear,
-                                     r_linear,
-                                     knots_type=knots_type)
+    spline_specs = utils.SplineSpecs(
+        knots, degree, l_linear, r_linear, knots_type=knots_type
+    )
 
     vec = np.random.randn(100)
     spline = spline_specs.create_spline(vec)

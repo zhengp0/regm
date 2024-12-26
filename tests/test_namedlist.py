@@ -1,6 +1,7 @@
 """
 Test NamedList and ChainNamedList
 """
+
 import pytest
 
 from regmod.composite_models.collections import NamedList, ChainNamedList

@@ -1,14 +1,14 @@
 """
 Customize Collections Class
 """
+
 from collections import OrderedDict
 from itertools import islice, chain
 from typing import Any, Iterator, Union, Tuple
 
 
 class NamedList(OrderedDict):
-    """Named list, a simple inherent class from OrderedDict.
-    """
+    """Named list, a simple inherent class from OrderedDict."""
 
     def _as_key(self, key: Union[int, str]) -> str:
         """Private function that process the key, if the ``key`` is integer, it
@@ -125,9 +125,9 @@ class ChainNamedList:
         """
         return chain.from_iterable(nlst.values() for nlst in self.named_lists)
 
-    def _as_key(self,
-                key: Union[int, str],
-                raise_keyerror: bool = True) -> Tuple[int, str]:
+    def _as_key(
+        self, key: Union[int, str], raise_keyerror: bool = True
+    ) -> Tuple[int, str]:
         """Private function that process the keys. Similar to the one in
         ``NamedList`` transform index to key. Return additional information of
         which list contains the key, allow function to raise ``KeyError`` when

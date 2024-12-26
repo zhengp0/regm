@@ -1,6 +1,7 @@
 """
 Tree Model
 """
+
 from typing import Dict, List
 
 import numpy as np
@@ -36,8 +37,10 @@ class TreeModel(CompositeModel):
             Raised when model have more than one computational tree.
         """
         if len(self.children.named_lists[1]) != 1:
-            raise ValueError(f"{type(self).__name__} must only have one "
-                             "computational tree.")
+            raise ValueError(
+                f"{type(self).__name__} must only have one "
+                "computational tree."
+            )
         self._fit(self.children.named_lists[1][0], **fit_options)
 
     @classmethod
@@ -57,11 +60,13 @@ class TreeModel(CompositeModel):
         return cls(name, models=[get_simple_basetree(*args, **kwargs)])
 
 
-def get_simple_basetree(df: DataFrame,
-                        col_label: List[str],
-                        model_specs: Dict,
-                        var_masks: Dict[str, float] = None,
-                        lvl_masks: List[float] = None) -> BaseModel:
+def get_simple_basetree(
+    df: DataFrame,
+    col_label: List[str],
+    model_specs: Dict,
+    var_masks: Dict[str, float] = None,
+    lvl_masks: List[float] = None,
+) -> BaseModel:
     """Get simple base model with tree structure from given specification.
 
     Parameters
@@ -97,14 +102,16 @@ def get_simple_basetree(df: DataFrame,
 
     # process masks
     final_var_masks = {v.name: np.full(v.size, np.inf) for v in variables}
-    final_lvl_masks = [np.inf]*len(col_label)
+    final_lvl_masks = [np.inf] * len(col_label)
     if var_masks is not None:
         final_var_masks.update(var_masks)
     if lvl_masks is not None:
-        final_lvl_masks = list(lvl_masks) + final_lvl_masks[len(lvl_masks):]
+        final_lvl_masks = list(lvl_masks) + final_lvl_masks[len(lvl_masks) :]
 
-    mask = {name: prior*final_lvl_masks[0]
-            for name, prior in final_var_masks.items()}
+    mask = {
+        name: prior * final_lvl_masks[0]
+        for name, prior in final_var_masks.items()
+    }
 
     # create children model
     df_group = df.groupby(col_label[0])
@@ -112,10 +119,14 @@ def get_simple_basetree(df: DataFrame,
         model_specs = model_specs.copy()
         model_specs["name"] = name
         model_specs["prior_mask"] = mask
-        model.append(get_simple_basetree(df_group.get_group(name),
-                                         col_label[1:],
-                                         model_specs,
-                                         var_masks=var_masks,
-                                         lvl_masks=final_lvl_masks[1:]))
+        model.append(
+            get_simple_basetree(
+                df_group.get_group(name),
+                col_label[1:],
+                model_specs,
+                var_masks=var_masks,
+                lvl_masks=final_lvl_masks[1:],
+            )
+        )
 
     return model

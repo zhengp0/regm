@@ -45,16 +45,23 @@ class NegativeBinomialModel(Model):
     def d2nll(self, params: list[NDArray]) -> list[list[NDArray]]:
         return [
             [
-                polygamma(1, params[0]) - polygamma(1, params[0] + self.data.obs),
+                polygamma(1, params[0])
+                - polygamma(1, params[0] + self.data.obs),
                 -1 / params[1],
             ],
             [
                 -1 / params[1],
-                params[0] / params[1] ** 2 + self.data.obs / (1 - params[1]) ** 2,
+                params[0] / params[1] ** 2
+                + self.data.obs / (1 - params[1]) ** 2,
             ],
         ]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         n = params[0]
         p = params[1]
-        return [nbinom.ppf(bounds[0], n=n, p=p), nbinom.ppf(bounds[1], n=n, p=p)]
+        return [
+            nbinom.ppf(bounds[0], n=n, p=p),
+            nbinom.ppf(bounds[1], n=n, p=p),
+        ]

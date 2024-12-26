@@ -34,8 +34,12 @@ def model_post_init(
         cmat = cmat / scale[:, np.newaxis]
         cvec = cvec / scale
 
-    cmat = np.vstack([-cmat[~np.isneginf(cvec[0])], cmat[~np.isposinf(cvec[1])]])
-    cvec = np.hstack([-cvec[0][~np.isneginf(cvec[0])], cvec[1][~np.isposinf(cvec[1])]])
+    cmat = np.vstack(
+        [-cmat[~np.isneginf(cvec[0])], cmat[~np.isposinf(cvec[1])]]
+    )
+    cvec = np.hstack(
+        [-cvec[0][~np.isneginf(cvec[0])], cvec[1][~np.isposinf(cvec[1])]]
+    )
     if issparse:
         cmat = csc_matrix(cmat).astype(np.float64)
     cmat = asmatrix(cmat)

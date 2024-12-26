@@ -68,7 +68,9 @@ def var_cov0(gprior, uprior):
 @pytest.fixture
 def var_cov1(spline_gprior, spline_uprior, spline_specs):
     return SplineVariable(
-        name="cov1", spline_specs=spline_specs, priors=[spline_gprior, spline_uprior]
+        name="cov1",
+        spline_specs=spline_specs,
+        priors=[spline_gprior, spline_uprior],
     )
 
 
@@ -177,7 +179,9 @@ def test_model_no_variables():
         col_offset="offset",
         df=df,
     )
-    model = create_gaussian_model(data, param_specs={"mu": {"offset": "offset"}})
+    model = create_gaussian_model(
+        data, param_specs={"mu": {"offset": "offset"}}
+    )
     coefs = np.array([])
     grad = model.gradient(coefs)
     hessian = model.hessian(coefs)

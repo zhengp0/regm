@@ -100,7 +100,11 @@ class Data:
 
     def __post_init__(self):
         self.col_covs = list(set(self.col_covs).union({"intercept"}))
-        self.cols = self.col_covs + [self.col_weights, self.col_offset, "trim_weights"]
+        self.cols = self.col_covs + [
+            self.col_weights,
+            self.col_offset,
+            "trim_weights",
+        ]
         if self.col_obs is not None:
             if isinstance(self.col_obs, str):
                 self.cols.insert(0, self.col_obs)
@@ -171,7 +175,11 @@ class Data:
         if self.col_offset not in self.df.columns:
             self.df[self.col_offset] = 0.0
         if self.col_obs is not None:
-            cols = self.col_obs if isinstance(self.col_obs, list) else [self.col_obs]
+            cols = (
+                self.col_obs
+                if isinstance(self.col_obs, list)
+                else [self.col_obs]
+            )
             for col in cols:
                 if col not in self.df.columns:
                     self.df[col] = np.nan
@@ -210,7 +218,9 @@ class Data:
 
         """
         df = self.df.copy() if with_df else DataFrame(columns=self.cols)
-        return Data(self.col_obs, self.col_covs, self.col_weights, self.col_offset, df)
+        return Data(
+            self.col_obs, self.col_covs, self.col_weights, self.col_offset, df
+        )
 
     def get_cols(self, cols: str | list[str]) -> NDArray:
         """Access columns in `self.df`.

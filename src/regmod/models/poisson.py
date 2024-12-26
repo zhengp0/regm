@@ -19,7 +19,9 @@ class PoissonModel(Model):
 
     def __init__(self, data: Data, **kwargs):
         if not all(data.obs >= 0):
-            raise ValueError("Poisson model requires observations to be non-negagive.")
+            raise ValueError(
+                "Poisson model requires observations to be non-negagive."
+            )
         super().__init__(data, **kwargs)
 
     def attach_df(self, df: DataFrame):
@@ -49,7 +51,9 @@ class PoissonModel(Model):
             Objective value.
         """
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
 
         weights = self.data.weights * self.data.trim_weights
@@ -71,7 +75,9 @@ class PoissonModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
 
@@ -95,14 +101,17 @@ class PoissonModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         d2param = inv_link.d2fun(lin_param)
 
         weights = self.data.weights * self.data.trim_weights
         hess_param = weights * (
-            self.data.obs / param**2 * dparam**2 + (1 - self.data.obs / param) * d2param
+            self.data.obs / param**2 * dparam**2
+            + (1 - self.data.obs / param) * d2param
         )
 
         scaled_mat = mat.scale_rows(hess_param)
@@ -125,7 +134,9 @@ class PoissonModel(Model):
         """
         mat = self.mat[0]
         inv_link = self.params[0].inv_link
-        lin_param = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        lin_param = self.params[0].get_lin_param(
+            coefs, self.data, mat=self.mat[0]
+        )
         param = inv_link.fun(lin_param)
         dparam = inv_link.dfun(lin_param)
         weights = self.data.weights * self.data.trim_weights
@@ -160,16 +171,23 @@ class PoissonModel(Model):
     def d2nll(self, params: list[NDArray]) -> list[list[NDArray]]:
         return [[self.data.obs / params[0] ** 2]]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         mean = params[0]
-        return [poisson.ppf(bounds[0], mu=mean), poisson.ppf(bounds[1], mu=mean)]
+        return [
+            poisson.ppf(bounds[0], mu=mean),
+            poisson.ppf(bounds[1], mu=mean),
+        ]
 
 
 class CanonicalPoissonModel(PoissonModel):
     def __init__(self, data: Data, **kwargs):
         super().__init__(data, **kwargs)
         if self.params[0].inv_link.name != "exp":
-            raise ValueError("Canonical Poisson model requires inverse link to be exp.")
+            raise ValueError(
+                "Canonical Poisson model requires inverse link to be exp."
+            )
 
     def objective(self, coefs: NDArray) -> float:
         weights = self.data.weights * self.data.trim_weights
@@ -183,7 +201,9 @@ class CanonicalPoissonModel(PoissonModel):
     def gradient(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
 
         prior_grad = self.gradient_from_gprior(coefs)
         likli_grad = mat.T.dot(weights * (z - self.data.obs))
@@ -192,7 +212,9 @@ class CanonicalPoissonModel(PoissonModel):
     def hessian(self, coefs: NDArray) -> Matrix:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
         likli_hess_scale = weights * z
 
         prior_hess = self.hessian_from_gprior()
@@ -204,7 +226,9 @@ class CanonicalPoissonModel(PoissonModel):
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
+        z = np.exp(
+            self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
+        )
         likli_jac_scale = weights * (z - self.data.obs)
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)

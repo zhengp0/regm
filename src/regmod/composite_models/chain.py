@@ -1,6 +1,7 @@
 """
 Chain Model
 """
+
 from typing import Dict, List
 
 from pandas import DataFrame
@@ -37,11 +38,14 @@ class ChainModel(CompositeModel):
             Raised when the computational tree is not a chain.
         """
         if len(self.children.named_lists[1]) != 1:
-            raise ValueError(f"{type(self).__name__} must only have one "
-                             "computational tree.")
+            raise ValueError(
+                f"{type(self).__name__} must only have one "
+                "computational tree."
+            )
         if len(self.children.named_lists[1][0].get_leafs(0)) != 1:
-            raise ValueError(f"{type(self).__name__} computational tree must be"
-                             " chain.")
+            raise ValueError(
+                f"{type(self).__name__} computational tree must be" " chain."
+            )
         self._fit(self.children.named_lists[1][0], **fit_options)
 
     @classmethod
@@ -61,8 +65,7 @@ class ChainModel(CompositeModel):
         return cls(name, models=[get_simple_basechain(*args, **kwargs)])
 
 
-def get_simple_basechain(df: DataFrame,
-                         model_specs: List[Dict]) -> BaseModel:
+def get_simple_basechain(df: DataFrame, model_specs: List[Dict]) -> BaseModel:
     """Get simple base model with chain structure from given specification.
 
     Parameters

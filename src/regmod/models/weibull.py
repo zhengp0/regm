@@ -16,7 +16,9 @@ class WeibullModel(Model):
 
     def __init__(self, data: Data, **kwargs):
         if not all(data.obs > 0):
-            raise ValueError("Weibull model requires observations to be positive.")
+            raise ValueError(
+                "Weibull model requires observations to be positive."
+            )
         super().__init__(data, **kwargs)
 
     def nll(self, params: list[NDArray]) -> NDArray:
@@ -48,7 +50,9 @@ class WeibullModel(Model):
             ],
         ]
 
-    def get_ui(self, params: list[NDArray], bounds: tuple[float, float]) -> NDArray:
+    def get_ui(
+        self, params: list[NDArray], bounds: tuple[float, float]
+    ) -> NDArray:
         scale = 1 / params[0] ** (1 / params[1])
         return [
             weibull_min.ppf(bounds[0], c=params[1], scale=scale),

@@ -1,15 +1,21 @@
 """
 Test parameter module
 """
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from regmod.data import Data
 from regmod.parameter import Parameter
-from regmod.prior import (GaussianPrior, LinearGaussianPrior,
-                          LinearUniformPrior, SplineGaussianPrior,
-                          SplineUniformPrior, UniformPrior)
+from regmod.prior import (
+    GaussianPrior,
+    LinearGaussianPrior,
+    LinearUniformPrior,
+    SplineGaussianPrior,
+    SplineUniformPrior,
+    UniformPrior,
+)
 from regmod.utils import SplineSpecs
 from regmod.variable import SplineVariable, Variable
 
@@ -19,15 +25,15 @@ from regmod.variable import SplineVariable, Variable
 @pytest.fixture
 def data():
     num_obs = 5
-    df = pd.DataFrame({
-        "obs": np.random.randn(num_obs),
-        "cov0": np.random.randn(num_obs),
-        "cov1": np.random.randn(num_obs),
-        "mu_offset": np.ones(num_obs),
-    })
-    return Data(col_obs="obs",
-                col_covs=["cov0", "cov1", "mu_offset"],
-                df=df)
+    df = pd.DataFrame(
+        {
+            "obs": np.random.randn(num_obs),
+            "cov0": np.random.randn(num_obs),
+            "cov1": np.random.randn(num_obs),
+            "mu_offset": np.ones(num_obs),
+        }
+    )
+    return Data(col_obs="obs", col_covs=["cov0", "cov1", "mu_offset"], df=df)
 
 
 @pytest.fixture
@@ -42,9 +48,9 @@ def uprior():
 
 @pytest.fixture
 def spline_specs():
-    return SplineSpecs(knots=np.linspace(0.0, 1.0, 5),
-                       degree=3,
-                       knots_type="rel_domain")
+    return SplineSpecs(
+        knots=np.linspace(0.0, 1.0, 5), degree=3, knots_type="rel_domain"
+    )
 
 
 @pytest.fixture
@@ -73,31 +79,38 @@ def linear_uprior():
 
 @pytest.fixture
 def var_cov0(gprior, uprior):
-    return Variable(name="cov0",
-                    priors=[gprior, uprior])
+    return Variable(name="cov0", priors=[gprior, uprior])
 
 
 @pytest.fixture
 def var_cov1(spline_gprior, spline_uprior, spline_specs):
-    return SplineVariable(name="cov1",
-                          spline_specs=spline_specs,
-                          priors=[spline_gprior, spline_uprior])
+    return SplineVariable(
+        name="cov1",
+        spline_specs=spline_specs,
+        priors=[spline_gprior, spline_uprior],
+    )
 
 
 @pytest.fixture
 def param(var_cov0, var_cov1, linear_gprior, linear_uprior):
-    return Parameter(name="mu",
-                     variables=[var_cov0, var_cov1],
-                     inv_link="exp",
-                     linear_gpriors=[linear_gprior],
-                     linear_upriors=[linear_uprior])
+    return Parameter(
+        name="mu",
+        variables=[var_cov0, var_cov1],
+        inv_link="exp",
+        linear_gpriors=[linear_gprior],
+        linear_upriors=[linear_uprior],
+    )
 
 
 def test_check_data(param, data):
     param.check_data(data)
-    assert all([var.spline is not None
-                for var in param.variables
-                if isinstance(var, SplineVariable)])
+    assert all(
+        [
+            var.spline is not None
+            for var in param.variables
+            if isinstance(var, SplineVariable)
+        ]
+    )
 
 
 def test_get_mat(param, data):
@@ -181,7 +194,7 @@ def test_offset(var_cov0, var_cov1, linear_gprior, linear_uprior, data):
         inv_link="exp",
         offset=None,
         linear_gpriors=[linear_gprior],
-        linear_upriors=[linear_uprior]
+        linear_upriors=[linear_uprior],
     )
 
     param1 = Parameter(
@@ -190,7 +203,7 @@ def test_offset(var_cov0, var_cov1, linear_gprior, linear_uprior, data):
         inv_link="exp",
         offset="mu_offset",
         linear_gpriors=[linear_gprior],
-        linear_upriors=[linear_uprior]
+        linear_upriors=[linear_uprior],
     )
     coefs = np.ones(param0.size)
     lin_param0 = param0.get_lin_param(coefs, data)

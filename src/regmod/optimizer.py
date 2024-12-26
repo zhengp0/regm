@@ -69,7 +69,11 @@ def msca_optimize(
         solver = NTSolver(model.objective, model.gradient, model.hessian)
     else:
         solver = IPSolver(
-            model.objective, model.gradient, model.hessian, model.cmat, model.cvec
+            model.objective,
+            model.gradient,
+            model.hessian,
+            model.cmat,
+            model.cvec,
         )
     result = solver.minimize(x0=x0, **options)
     model.opt_result = result

@@ -129,7 +129,9 @@ class SplineSpecs:
         inner_knots = self.knots[
             int(self.l_linear) : len(self.knots) - int(self.r_linear)
         ]
-        return len(inner_knots) - 2 + self.degree + int(self.include_first_basis)
+        return (
+            len(inner_knots) - 2 + self.degree + int(self.include_first_basis)
+        )
 
     def create_spline(self, vec: NDArray | None = None) -> XSpline:
         """Create spline from the given vector.

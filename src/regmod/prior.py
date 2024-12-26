@@ -171,7 +171,9 @@ class UniformPrior(Prior):
         if self.ub.size != self.size:
             raise ValueError("Upper bound vector size does not match.")
         if any(self.lb > self.ub):
-            ValueError("Lower bounds must be less than or equal to upper bounds.")
+            ValueError(
+                "Lower bounds must be less than or equal to upper bounds."
+            )
 
 
 @dataclass
@@ -200,7 +202,9 @@ class LinearPrior:
 
     """
 
-    mat: NDArray = field(default_factory=lambda: np.empty(shape=(0, 1)), repr=False)
+    mat: NDArray = field(
+        default_factory=lambda: np.empty(shape=(0, 1)), repr=False
+    )
     size: int = None
 
     def __post_init__(self):
@@ -274,7 +278,10 @@ class SplinePrior(LinearPrior):
         assert (
             self.domain_lb <= self.domain_ub
         ), "Domain lower bound must be less or equal than upper bound."
-        assert self.domain_type in ["rel", "abs"], "Domain type must be 'rel' or 'abs'."
+        assert self.domain_type in [
+            "rel",
+            "abs",
+        ], "Domain type must be 'rel' or 'abs'."
         if self.domain_type == "rel":
             assert (
                 self.domain_lb >= 0.0 and self.domain_ub <= 1.0
