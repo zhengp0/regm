@@ -7,6 +7,6 @@ from .gaussian import CanonicalGaussianModel, GaussianModel, create_gaussian_mod
 from .model import Model
 from .negativebinomial import NegativeBinomialModel
 from .pogit import PogitModel
-from .poisson import PoissonModel
+from .poisson import CanonicalPoissonModel, PoissonModel, create_poisson_model
 from .tobit import TobitModel
 from .weibull import WeibullModel
