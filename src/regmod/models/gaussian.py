@@ -32,13 +32,6 @@ class GaussianModel(Model):
     def hessian_from_gprior(self) -> Matrix:
         return self.hmat
 
-    def get_lin_param(self, coefs: NDArray) -> NDArray:
-        mat = self.mat[0]
-        lin_param = mat.dot(coefs)
-        if self.params[0].offset is not None:
-            lin_param += self.data.get_cols(self.params[0].offset)
-        return lin_param
-
     def objective(self, coefs: NDArray) -> float:
         """Objective function.
         Parameters
@@ -184,7 +177,7 @@ class CanonicalGaussianModel(GaussianModel):
 
     def objective(self, coefs: NDArray) -> float:
         weights = self.data.weights * self.data.trim_weights
-        y = self.get_lin_param(coefs)
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
 
         prior_obj = self.objective_from_gprior(coefs)
         likli_obj = 0.5 * weights.dot((y - self.data.obs) ** 2)
@@ -193,7 +186,7 @@ class CanonicalGaussianModel(GaussianModel):
     def gradient(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        y = self.get_lin_param(coefs)
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
 
         prior_grad = self.gradient_from_gprior(coefs)
         likli_grad = mat.T.dot(weights * (y - self.data.obs))
@@ -213,7 +206,7 @@ class CanonicalGaussianModel(GaussianModel):
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        y = self.get_lin_param(coefs)
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
         likli_jac_scale = weights * (y - self.data.obs)
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)

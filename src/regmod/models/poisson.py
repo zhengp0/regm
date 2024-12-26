@@ -34,13 +34,6 @@ class PoissonModel(Model):
             self.linear_gvec,
         )
 
-    def get_lin_param(self, coefs: NDArray) -> NDArray:
-        mat = self.mat[0]
-        lin_param = mat.dot(coefs)
-        if self.params[0].offset is not None:
-            lin_param += self.data.get_cols(self.params[0].offset)
-        return lin_param
-
     def hessian_from_gprior(self):
         return self.hmat
 
@@ -180,7 +173,7 @@ class CanonicalPoissonModel(PoissonModel):
 
     def objective(self, coefs: NDArray) -> float:
         weights = self.data.weights * self.data.trim_weights
-        y = self.get_lin_param(coefs)
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
         z = np.exp(y)
 
         prior_obj = self.objective_from_gprior(coefs)
@@ -190,7 +183,7 @@ class CanonicalPoissonModel(PoissonModel):
     def gradient(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
 
         prior_grad = self.gradient_from_gprior(coefs)
         likli_grad = mat.T.dot(weights * (z - self.data.obs))
@@ -199,7 +192,7 @@ class CanonicalPoissonModel(PoissonModel):
     def hessian(self, coefs: NDArray) -> Matrix:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
         likli_hess_scale = weights * z
 
         prior_hess = self.hessian_from_gprior()
@@ -211,7 +204,7 @@ class CanonicalPoissonModel(PoissonModel):
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
         likli_jac_scale = weights * (z - self.data.obs)
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)

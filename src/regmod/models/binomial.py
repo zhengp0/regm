@@ -36,13 +36,6 @@ class BinomialModel(Model):
             self.linear_gvec,
         )
 
-    def get_lin_param(self, coefs: NDArray) -> NDArray:
-        mat = self.mat[0]
-        lin_param = mat.dot(coefs)
-        if self.params[0].offset is not None:
-            lin_param += self.data.get_cols(self.params[0].offset)
-        return lin_param
-
     def hessian_from_gprior(self) -> NDArray:
         """Hessian matrix from the Gaussian prior.
 
@@ -215,7 +208,7 @@ class CanonicalBinomialModel(BinomialModel):
 
     def objective(self, coefs: NDArray) -> float:
         weights = self.data.weights * self.data.trim_weights
-        y = self.get_lin_param(coefs)
+        y = self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0])
 
         prior_obj = self.objective_from_gprior(coefs)
         likli_obj = weights.dot(np.log(1 + np.exp(-y)) + (1 - self.data.obs) * y)
@@ -224,7 +217,7 @@ class CanonicalBinomialModel(BinomialModel):
     def gradient(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
 
         prior_grad = self.gradient_from_gprior(coefs)
         likli_grad = mat.T.dot(weights * (z / (1 + z) - self.data.obs))
@@ -233,7 +226,7 @@ class CanonicalBinomialModel(BinomialModel):
     def hessian(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
         likli_hess_scale = weights * (z / ((1 + z) ** 2))
 
         likli_hess_right = mat.scale_rows(likli_hess_scale)
@@ -244,7 +237,7 @@ class CanonicalBinomialModel(BinomialModel):
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
         weights = self.data.weights * self.data.trim_weights
-        z = np.exp(self.get_lin_param(coefs))
+        z = np.exp(self.params[0].get_lin_param(coefs, self.data, mat=self.mat[0]))
         likli_jac_scale = weights * (z / (1 + z) - self.data.obs)
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)
