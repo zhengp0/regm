@@ -5,9 +5,9 @@ Poisson Model
 import numpy as np
 from scipy.stats import poisson
 
+from regmod._typing import Callable, DataFrame, NDArray
 from regmod.data import Data
 from regmod.optimizer import msca_optimize
-from regmod._typing import Callable, NDArray, DataFrame
 
 from .model import Model
 from .utils import model_post_init
@@ -24,9 +24,18 @@ class PoissonModel(Model):
 
     def attach_df(self, df: DataFrame):
         super().attach_df(df)
-        self.mat[0], self.cmat, self.cvec = model_post_init(
-            self.mat[0], self.uvec, self.linear_umat, self.linear_uvec
+        self.mat[0], self.cmat, self.cvec, self.hmat = model_post_init(
+            self.mat[0],
+            self.uvec,
+            self.linear_umat,
+            self.linear_uvec,
+            self.gvec,
+            self.linear_gmat,
+            self.linear_gvec,
         )
+
+    def hessian_from_gprior(self):
+        return self.hmat
 
     def objective(self, coefs: NDArray) -> float:
         """Objective function.

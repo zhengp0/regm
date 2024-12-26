@@ -2,8 +2,6 @@
 Binomial Model
 """
 
-from functools import cached_property
-
 import numpy as np
 from scipy.stats import binom
 
@@ -28,8 +26,14 @@ class BinomialModel(Model):
 
     def attach_df(self, df: DataFrame):
         super().attach_df(df)
-        self.mat[0], self.cmat, self.cvec = model_post_init(
-            self.mat[0], self.uvec, self.linear_umat, self.linear_uvec
+        self.mat[0], self.cmat, self.cvec, self.hmat = model_post_init(
+            self.mat[0],
+            self.uvec,
+            self.linear_umat,
+            self.linear_uvec,
+            self.gvec,
+            self.linear_gmat,
+            self.linear_gvec,
         )
 
     def get_lin_param(self, coefs: NDArray) -> NDArray:
@@ -39,7 +43,6 @@ class BinomialModel(Model):
             lin_param += self.data.get_cols(self.params[0].offset)
         return lin_param
 
-    @cached_property
     def hessian_from_gprior(self) -> NDArray:
         """Hessian matrix from the Gaussian prior.
 
@@ -49,12 +52,7 @@ class BinomialModel(Model):
             Hessian matrix.
 
         """
-        hess = np.diag(1.0 / self.gvec[1] ** 2)
-        if self.linear_gvec.size > 0:
-            hess += (self.linear_gmat.T.scale_cols(1.0 / self.linear_gvec[1] ** 2)).dot(
-                self.linear_gmat
-            )
-        return hess
+        return self.hmat
 
     def objective(self, coefs: NDArray) -> float:
         weights = self.data.weights * self.data.trim_weights
@@ -82,7 +80,7 @@ class BinomialModel(Model):
         likli_hess_right = mat.scale_rows(likli_hess_scale)
         likli_hess = mat.T.dot(likli_hess_right)
 
-        return self.hessian_from_gprior + likli_hess
+        return self.hessian_from_gprior() + likli_hess
 
     def jacobian2(self, coefs: NDArray) -> NDArray:
         mat = self.mat[0]
@@ -92,7 +90,7 @@ class BinomialModel(Model):
 
         likli_jac = mat.T.scale_cols(likli_jac_scale)
         likli_jac2 = likli_jac.dot(likli_jac.T)
-        return self.hessian_from_gprior + likli_jac2
+        return self.hessian_from_gprior() + likli_jac2
 
     def get_pearson_residuals(self, coefs: NDArray) -> NDArray:
         z = np.exp(self.get_lin_param(coefs))

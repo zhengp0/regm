@@ -5,8 +5,8 @@ Gaussian Model
 import numpy as np
 from scipy.stats import norm
 
+from regmod._typing import Callable, DataFrame, Matrix, NDArray
 from regmod.optimizer import msca_optimize
-from regmod._typing import Callable, NDArray, DataFrame
 
 from .model import Model
 from .utils import model_post_init
@@ -18,9 +18,18 @@ class GaussianModel(Model):
 
     def attach_df(self, df: DataFrame):
         super().attach_df(df)
-        self.mat[0], self.cmat, self.cvec = model_post_init(
-            self.mat[0], self.uvec, self.linear_umat, self.linear_uvec
+        self.mat[0], self.cmat, self.cvec, self.hmat = model_post_init(
+            self.mat[0],
+            self.uvec,
+            self.linear_umat,
+            self.linear_uvec,
+            self.gvec,
+            self.linear_gmat,
+            self.linear_gvec,
         )
+
+    def hessian_from_gprior(self) -> Matrix:
+        return self.hmat
 
     def objective(self, coefs: NDArray) -> float:
         """Objective function.

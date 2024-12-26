@@ -1,7 +1,8 @@
 import numpy as np
 from msca.linalg.matrix import asmatrix
 from scipy.sparse import csc_matrix
-from regmod._typing import NDArray, Matrix
+
+from regmod._typing import Matrix, NDArray
 
 
 def model_post_init(
@@ -9,7 +10,10 @@ def model_post_init(
     uvec: NDArray,
     linear_umat: NDArray,
     linear_uvec: NDArray,
-) -> tuple[Matrix, Matrix, NDArray]:
+    gvec: NDArray,
+    linear_gmat: NDArray,
+    linear_gvec: NDArray,
+) -> tuple[Matrix, Matrix, NDArray, Matrix]:
     # design matrix
     issparse = mat.size == 0 or ((mat == 0).sum() / mat.size) > 0.95
     if issparse:
@@ -35,4 +39,12 @@ def model_post_init(
         cmat = csc_matrix(cmat).astype(np.float64)
     cmat = asmatrix(cmat)
 
-    return mat, cmat, cvec
+    gmat = np.vstack([np.identity(mat.shape[1]), linear_gmat])
+    gvec = np.hstack([gvec, linear_gvec])
+
+    if issparse:
+        gmat = csc_matrix(gmat).astype(np.float64)
+    gmat = asmatrix(gmat)
+
+    hmat = gmat.T.scale_cols(1.0 / gvec[1] ** 2).dot(gmat)
+    return mat, cmat, cvec, hmat
