@@ -224,3 +224,7 @@ def create_gaussian_model(data: Data, **kwargs) -> GaussianModel:
     if params[0].inv_link.name == "identity":
         return CanonicalGaussianModel(data, params=params)
     return GaussianModel(data, params=params)
+
+
+for key in ["param_names", "default_param_specs"]:
+    setattr(create_gaussian_model, key, getattr(GaussianModel, key))

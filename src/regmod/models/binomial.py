@@ -255,3 +255,7 @@ def create_binomial_model(data: Data, **kwargs) -> BinomialModel:
     if params[0].inv_link.name == "expit":
         return CanonicalBinomialModel(data, params=params)
     return BinomialModel(data, params=params)
+
+
+for key in ["param_names", "default_param_specs"]:
+    setattr(create_binomial_model, key, getattr(BinomialModel, key))

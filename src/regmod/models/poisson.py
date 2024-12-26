@@ -222,3 +222,7 @@ def create_poisson_model(data: Data, **kwargs) -> PoissonModel:
     if params[0].inv_link.name == "exp":
         return CanonicalPoissonModel(data, params=params)
     return PoissonModel(data, params=params)
+
+
+for key in ["param_names", "default_param_specs"]:
+    setattr(create_poisson_model, key, getattr(PoissonModel, key))
