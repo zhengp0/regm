@@ -3,6 +3,7 @@ from msca.linalg.matrix import asmatrix
 from scipy.sparse import csc_matrix
 
 from regmod._typing import Matrix, NDArray
+from regmod.parameter import Parameter
 
 
 def model_post_init(
@@ -48,3 +49,24 @@ def model_post_init(
 
     hmat = gmat.T.scale_cols(1.0 / gvec[1] ** 2).dot(gmat)
     return mat, cmat, cvec, hmat
+
+
+def get_params(
+    params: list[Parameter] | None = None,
+    param_specs: dict[str, dict] | None = None,
+    default_param_specs: dict[str, dict] | None = None,
+) -> list[Parameter]:
+    if params is None and param_specs is None:
+        raise ValueError("Please provide `params` or `param_specs`")
+
+    if params is not None:
+        return params
+
+    default_param_specs = default_param_specs or {}
+    param_specs = {
+        key: {**default_param_specs.get(key, {}), **value}
+        for key, value in param_specs.items()
+    }
+
+    params = [Parameter(key, **value) for key, value in param_specs.items()]
+    return params

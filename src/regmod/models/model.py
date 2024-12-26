@@ -8,6 +8,7 @@ from scipy.sparse import csc_matrix
 
 from regmod._typing import Callable, DataFrame, Matrix, NDArray
 from regmod.data import Data
+from regmod.models.utils import get_params
 from regmod.optimizer import scipy_optimize
 from regmod.parameter import Parameter
 from regmod.utils import sizes_to_slices
@@ -131,23 +132,9 @@ class Model:
         params: list[Parameter] | None = None,
         param_specs: dict[str, dict] | None = None,
     ):
-        if params is None and param_specs is None:
-            raise ValueError("Must provide `params` or `param_specs`")
-
-        if params is not None:
-            param_dict = {param.name: param for param in params}
-            self.params = [param_dict[param_name] for param_name in self.param_names]
-        else:
-            self.params = [
-                Parameter(
-                    param_name,
-                    **{
-                        **self.default_param_specs[param_name],
-                        **param_specs[param_name],
-                    },
-                )
-                for param_name in self.param_names
-            ]
+        params = get_params(params, param_specs, self.default_param_specs)
+        param_dict = {param.name: param for param in params}
+        self.params = [param_dict[param_name] for param_name in self.param_names]
 
         self.data = data
         if not self.data.is_empty():
